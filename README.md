@@ -1,5 +1,8 @@
 # Unrolled Flow Models for Reasoning — reproducibility code
 
+> **Work in progress.** This repository is being cleaned up and documented; code, configs and
+> instructions may still change. Replication runs of the paper's results are ongoing.
+
 Training and evaluation code for the Sudoku-Extreme, Maze-Hard and Sudoku-Hard results of the
 paper. UFM: a 2-layer, 448-wide DiT (8.4M parameters) predicts the clean endpoint of a latent flow;
 training unrolls a 24-step Euler rollout with a hinted random start, backpropagates through the
