@@ -1,0 +1,56 @@
+# Maze-Hard 30x30 (1k training mazes). Paper row: 89.3 +- 0.5 exact match at N=128 on the
+# 1000 test mazes, 5 noise seeds. Two A100-40GB (torchrun --nproc-per-node=2), ~21 h.
+# NOTE: this benchmark ships without a validation split, so training-time evaluation and
+# checkpoint selection use the test set, for every method in the paper. With
+# save_best_only: false the run keeps a step_<n> checkpoint per evaluation; pass
+# --ckpt-file step_<n> to evaluate.py for a selection-free number.
+# Data: python dataset/build_maze_dataset.py --output-dir data/maze-30x30-hard-1k
+defaults:
+  - cfg_pretrain
+  - override arch: dit_ref_lit
+  - _self_
+
+run_name: maze_hard
+data_paths: ['data/maze-30x30-hard-1k']
+eval_sets: [all]        # the single test set; this benchmark has no validation split
+global_batch_size: 128  # 64 per GPU on 2 GPUs
+epochs: 16000
+eval_interval: 1000
+
+lr: 1e-4
+lr_min_ratio: 0.1
+lr_warmup_steps: 2000
+weight_decay: 1.0
+grad_clip: 1.0
+ema: true
+ema_rate: 0.999
+best_metric: all/exact_accuracy_N64   # the single test set is named "all" in this benchmark
+
+arch:
+  hidden_size: 448
+  num_heads: 8
+  time_freq_dim: 256
+  train_N: 24
+  n_back: 6
+  time_sampling: random_sorted
+  x_pred: true
+  exp_update: false
+  stable_w: true
+  t_max: 1.0
+  grid_size: 30
+  puzzle_emb_len: 16
+  dropout: 0.1
+  grad_decay: 1.0
+  rand_t0: true
+  t0_start: 0.6
+  t0_min: 0.2
+  t0_decay_frac: 0.3
+  noise_scale: 1.0        # unit noise (+ sphere retraction)
+  normalize_z: false
+  forward_dtype: float32
+  bf16_acc32: true
+  eval_Ns: [8, 16, 32, 64, 128]
+  psi_update: true
+  no_time: true
+  loss:
+    label_smoothing: 0.0

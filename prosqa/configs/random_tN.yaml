@@ -1,0 +1,50 @@
+# ProsQA, latent flow with a random terminal knot.
+name: prosqa_random_tN
+seed: 0
+data_dir: data
+save_dir: checkpoints
+
+# model (2 layers, 15.7M parameters)
+max_len: 256
+d_model: 768
+n_layers: 2
+n_heads: 8
+mlp_ratio: 4.0
+dropout: 0.1
+time_embed_layers: 3
+freq_dim: 512
+time_dim: 128
+
+# rollout
+rollout_steps: 5          # N Euler steps unrolled during training
+grad_decay: 0.7           # per-step gradient attenuation through the rollout
+grid: stratified          # interior knots: one per bin of (t_0, t_max)
+t0_max: 0.5               # start time t_0 ~ U[0, t0_max], answer slot on the interpolant
+t_max: 1.0                # upper end of the interior and terminal knots
+fixed_tN: 0.0
+random_tN: true           # terminal knot ~ U(t_{N-1}, t_max), last step is an Euler step
+t_clamp_eps: 0.05
+label_smoothing: 0.1
+bf16_acc32: true          # bf16 network calls, fp32 rollout state
+
+# staged curriculum over the shortest path (stage K supervises node K+1)
+epochs_per_stage: 25
+max_stage: 4
+replay_prob: 0.1
+
+# optimisation
+batch_size: 128
+num_epochs: 300
+lr: 1.0e-4
+warmup_steps: 500
+weight_decay: 0.01
+betas: [0.9, 0.95]
+grad_clip: 1.0
+ema_decay: 0.999
+num_workers: 4
+
+# evaluation (EMA weights; checkpoint selection on validation accuracy)
+eval_every: 10
+eval_steps: 5
+eval_steps_during_training: [1, 2, 3, 4, 5, 6, 7, 8, 16]
+eval_steps_sweep: [1, 2, 4, 6, 8, 16, 32, 64]

@@ -1,0 +1,54 @@
+# Sudoku-Hard (the synthetic 48k/2k split of the S-FLM paper, 30 givens) at OUR full budget:
+# batch 768, 2080 epochs = 130k steps (the Sudoku-Extreme step count), ~22 h on one A100-40GB.
+# Paper row: 99.8 exact match at N=128 on the 2k reporting puzzles. Same hyper-parameters as
+# sudoku_hard.yaml (the S-FLM-budget run, 86.9); only batch, epochs, warm-up and eval cadence differ.
+# Checkpoint selection on the 2k extra puzzles (seed 43); the reporting set is never seen in training.
+# Data: python dataset/build_sudoku_hard_dataset.py --difficulty hard --output-dir data/sudoku-hard
+defaults:
+  - cfg_pretrain
+  - override arch: dit_ref_lit
+  - _self_
+
+run_name: sudoku_hard_full
+data_paths: ['data/sudoku-hard']
+eval_sets: [val]
+global_batch_size: 768
+epochs: 2080
+eval_interval: 40
+
+lr: 1e-4
+lr_min_ratio: 0.1
+lr_warmup_steps: 2000
+weight_decay: 0.75
+grad_clip: 1.0
+ema: true
+ema_rate: 0.999
+best_metric: val/exact_accuracy_N64
+
+arch:
+  hidden_size: 448
+  num_heads: 8
+  time_freq_dim: 256
+  train_N: 24
+  n_back: 6
+  time_sampling: random_sorted
+  x_pred: true
+  exp_update: false
+  stable_w: true
+  t_max: 1.0
+  puzzle_emb_len: 16
+  dropout: 0.1
+  grad_decay: 1.0
+  rand_t0: true
+  t0_start: 0.6
+  t0_min: 0.2
+  t0_decay_frac: 0.3
+  noise_scale: 0.047246
+  normalize_z: false
+  forward_dtype: float32
+  bf16_acc32: true
+  eval_Ns: [8, 16, 32, 64, 128]
+  psi_update: true
+  no_time: true
+  loss:
+    label_smoothing: 0.1

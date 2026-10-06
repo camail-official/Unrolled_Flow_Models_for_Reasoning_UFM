@@ -1,0 +1,18 @@
+name: dit_ref@DiTRef
+loss:
+  name: losses@FlowLossHead
+  loss_type: stablemax_cross_entropy
+
+# Reference DiT (2L, d432/12H ~7.9M), block_type=lightning, RoPE-2D, canonical time embedder (raw t)
+block_type: lightning
+n_layers: 2
+hidden_size: 432
+num_heads: 12
+expansion: 4
+time_freq_dim: 256
+forward_dtype: bfloat16
+
+train_N: 12
+n_back: 6
+time_sampling: stratified
+eval_Ns: [1, 8, 16, 64]

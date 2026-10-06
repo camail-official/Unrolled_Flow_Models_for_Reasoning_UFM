@@ -1,0 +1,52 @@
+# Sudoku-Extreme (1k base puzzles x 1000 augmentations). Paper row: 74.4 +- 0.0 (uniform grid)
+# / 79.7 +- 0.0 (geometric grid) exact match at N=128 on the full 422,786-puzzle test set,
+# 5 noise seeds. One A100-40GB, ~22 h of training (130k steps).
+# Data: python dataset/build_sudoku_dataset.py --output-dir data/sudoku-extreme-1k-aug-1000 --subsample-size 1000 --num-aug 1000
+defaults:
+  - cfg_pretrain
+  - override arch: dit_ref_lit
+  - _self_
+
+run_name: sudoku_extreme
+data_paths: ['data/sudoku-extreme-1k-aug-1000']
+eval_sets: [val]        # training-time evaluation and checkpoint selection on the validation split only
+global_batch_size: 768
+epochs: 100000
+eval_interval: 2000
+
+lr: 1e-4
+lr_min_ratio: 0.1       # cosine decay after warm-up, 1e-4 -> 1e-5 over the run
+lr_warmup_steps: 2000
+weight_decay: 0.75
+grad_clip: 1.0
+ema: true
+ema_rate: 0.999
+best_metric: val/exact_accuracy_N64
+
+arch:
+  hidden_size: 448
+  num_heads: 8
+  time_freq_dim: 256
+  train_N: 24             # rollout length during training
+  n_back: 6               # gradient through the last 6 steps only
+  time_sampling: random_sorted
+  x_pred: true
+  exp_update: false
+  stable_w: true
+  t_max: 1.0
+  puzzle_emb_len: 16
+  dropout: 0.1
+  grad_decay: 1.0
+  rand_t0: true           # hinted start t0 ~ U[0, t0_max]
+  t0_start: 0.6
+  t0_min: 0.2
+  t0_decay_frac: 0.3
+  noise_scale: 0.047246   # 1/sqrt(448)
+  normalize_z: false
+  forward_dtype: float32
+  bf16_acc32: true
+  eval_Ns: [8, 16, 32, 64, 128]
+  psi_update: true        # sphere retraction of the carried state
+  no_time: true           # time-blind denoiser (the time input is not used)
+  loss:
+    label_smoothing: 0.1

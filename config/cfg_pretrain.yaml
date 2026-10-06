@@ -1,0 +1,45 @@
+# Shared training defaults. The paper runs are config/{sudoku_extreme,maze_hard,sudoku_hard,
+# sudoku_hard_full}.yaml, which override the values below; the defaults here follow TRM's
+# Sudoku-Extreme recipe (epochs 50000, eval 5000, lr 1e-4, wd 1.0, batch 768, EMA on).
+# Build data first: python dataset/build_sudoku_dataset.py --output-dir data/sudoku-extreme-1k-aug-1000 --subsample-size 1000 --num-aug 1000
+# (the Sudoku builders are seeded; the Maze builder takes the full 1k/1k split, so no sampling)
+
+defaults:
+  - arch: dit_ref_lit
+  - _self_
+
+hydra:
+  output_subdir: null
+
+# Data path
+data_paths: ['data/sudoku-extreme-1k-aug-1000']
+data_paths_test: []
+
+evaluators: []
+eval_sets: [val]   # evaluate only the validation set during training (Maze overrides: it has none)
+
+# Hyperparams - Training
+global_batch_size: 768
+
+epochs: 50000
+eval_interval: 5000
+checkpoint_every_eval: True
+
+lr: 1e-4
+lr_min_ratio: 1.0
+lr_warmup_steps: 2000
+
+# Standard hyperparameter settings for LM, as used in Llama
+beta1: 0.9
+beta2: 0.95
+weight_decay: 1.0
+grad_clip: 1.0 # max grad-norm (1.0 in all paper runs); set 0 to disable
+
+seed: 0
+min_eval_interval: 0 # when to start the eval
+
+ema: True # use Exponential-Moving-Average
+ema_rate: 0.999 # EMA-rate
+
+save_best_only: True # keep ONLY the best checkpoint (single "best" file, overwritten on improvement)
+best_metric: val/exact_accuracy_N64
