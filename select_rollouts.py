@@ -42,7 +42,6 @@ if __name__ == "__main__":
     ap.add_argument("ckpt_dir"); ap.add_argument("data_dir")
     ap.add_argument("--set", default="test"); ap.add_argument("--ckpt-file", default="best")
     ap.add_argument("--N", type=int, default=128); ap.add_argument("--K", type=int, default=100)
-    ap.add_argument("--grid", default="uniform", choices=["uniform", "geom"]); ap.add_argument("--G", type=float, default=8.0)
     ap.add_argument("--batch", type=int, default=0, help="puzzles per batch (x K rollouts)")
     ap.add_argument("--seed", type=int, default=0); ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
@@ -55,8 +54,8 @@ if __name__ == "__main__":
     lab = np.load(f"{data}/{args.set}__labels.npy").astype(np.int64)
     if args.limit:
         inp, lab = inp[:args.limit], lab[:args.limit]
-    times = make_grid(args.grid, args.N, args.G)
-    print(f"ckpt {args.ckpt_dir}/{args.ckpt_file}  set {args.set} ({len(inp)} puzzles)  N={args.N} grid={args.grid}  K={args.K}", flush=True)
+    times = make_grid(args.N)
+    print(f"ckpt {args.ckpt_dir}/{args.ckpt_file}  set {args.set} ({len(inp)} puzzles)  N={args.N}  K={args.K}", flush=True)
     E, M = [], []
     for s in range(0, len(inp), B):
         x = torch.from_numpy(inp[s:s + B]).to(DEV); y = torch.from_numpy(lab[s:s + B]).to(DEV)

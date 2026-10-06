@@ -79,9 +79,8 @@ Checkpoint selection:
 Exact-match accuracy of one rollout per puzzle (Pass@1), averaged over 5 independent noise seeds:
 
 ```
-# Sudoku-Extreme, full official test set (422,786 puzzles); uniform grid and geometric grid (G=8)
-python evaluate.py checkpoints/Sudoku-extreme-1k-aug-1000-DiTFlow-torch/sudoku_extreme data/sudoku-extreme-full/test --set test --N 128 --grid uniform
-python evaluate.py checkpoints/Sudoku-extreme-1k-aug-1000-DiTFlow-torch/sudoku_extreme data/sudoku-extreme-full/test --set test --N 128 --grid geom --G 8
+# Sudoku-Extreme, full official test set (422,786 puzzles)
+python evaluate.py checkpoints/Sudoku-extreme-1k-aug-1000-DiTFlow-torch/sudoku_extreme data/sudoku-extreme-full/test --set test --N 128
 
 # Maze-Hard, 1000 test mazes
 python evaluate.py checkpoints/Maze-30x30-hard-1k-DiTFlow-torch/maze_hard data/maze-30x30-hard-1k/test --set all --N 128
@@ -91,19 +90,18 @@ python evaluate.py checkpoints/Sudoku-hard-DiTFlow-torch/sudoku_hard data/sudoku
 python evaluate.py checkpoints/Sudoku-hard-DiTFlow-torch/sudoku_hard_full data/sudoku-hard/test --set test --N 128
 ```
 
-Expected results (exact match %, N = 128, mean +/- std over 5 noise seeds):
+Expected results (exact match %, N = 128, uniform Euler grid, mean +/- std over 5 noise seeds):
 
-| benchmark | test population | uniform grid | geometric grid (G=8) |
-|---|---|---|---|
-| Sudoku-Extreme | 422,786 | 74.4 +/- 0.0 | 79.7 +/- 0.0 |
-| Maze-Hard | 1,000 | 89.3 +/- 0.5 | — |
-| Sudoku-Hard, S-FLM budget | 2,000 | 86.9 +/- 0.9 | — |
-| Sudoku-Hard, full budget | 2,000 | 99.8 (paper: single seed; the command above averages 5) | — |
+| benchmark | test population | exact match |
+|---|---|---|
+| Sudoku-Extreme | 422,786 | 74.4 +/- 0.0 |
+| Maze-Hard | 1,000 | 89.3 +/- 0.5 |
+| Sudoku-Hard, S-FLM budget | 2,000 | 86.9 +/- 0.9 |
+| Sudoku-Hard, full budget | 2,000 | 99.8 (paper: single seed; the command above averages 5) |
 
 Multiple rollouts per puzzle: Pass@K and the margin chooser of the selection section, on the
 same rollouts. For Sudoku-Extreme this runs on the 2,000-puzzle test subsample built above (the paper's
-selection study uses that subsample); N = 128 and, for Sudoku-Extreme, the geometric grid G = 8 are the
-settings used throughout the paper.
+selection study uses that subsample); N = 128 is the setting used throughout the paper.
 
 ```
 python select_rollouts.py checkpoints/Sudoku-extreme-1k-aug-1000-DiTFlow-torch/sudoku_extreme data/sudoku-extreme-1k-aug-1000/test --set test --N 128 --K 100

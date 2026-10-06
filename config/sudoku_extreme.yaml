@@ -1,5 +1,5 @@
-# Sudoku-Extreme (1k base puzzles x 1000 augmentations). Paper row: 74.4 +- 0.0 (uniform grid)
-# / 79.7 +- 0.0 (geometric grid) exact match at N=128 on the full 422,786-puzzle test set,
+# Sudoku-Extreme (1k base puzzles x 1000 augmentations). Paper row: 74.4 +- 0.0 exact match at
+# N=128 (uniform Euler grid) on the full 422,786-puzzle test set,
 # 5 noise seeds. One A100-40GB, ~22 h of training (130k steps).
 # Data: python dataset/build_sudoku_dataset.py --output-dir data/sudoku-extreme-1k-aug-1000 --subsample-size 1000 --num-aug 1000
 defaults:

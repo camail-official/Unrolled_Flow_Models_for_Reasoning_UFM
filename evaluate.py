@@ -1,12 +1,11 @@
 """Final evaluation: exact-match accuracy of a trained checkpoint on a held-out set, averaged
 over independent noise seeds (each seed = one full pass, i.e. one rollout per puzzle, K=1).
 
-  python evaluate.py checkpoints/<Project>/<run> data/<dataset>/test --set test --N 128 --seeds 5 --grid uniform
-  python evaluate.py checkpoints/<Project>/<run> data/<dataset>/test --set test --N 128 --seeds 5 --grid geom --G 8
+  python evaluate.py checkpoints/<Project>/<run> data/<dataset>/test --set test --N 128 --seeds 5
 
 --set: which set of <data>/test to score (test / val, or all for Maze). --ckpt-file: "best" (default,
 the checkpoint selected during training) or another file saved in the run directory.
-Grids: uniform knots on [0,1], or geometric t_j = 1 - exp(-jG/N) with the last knot at 1.
+The Euler grid is uniform on [0, 1] with N steps.
 Prints per-seed accuracies, mean +/- std, and the 2-sigma binomial band for the set size.
 """
 import argparse
@@ -36,12 +35,8 @@ def load(ckpt_dir, batch, seq, vocab, ckpt_file="best"):
     return m.to(DEV)
 
 
-def make_grid(kind, N, G):
-    if kind == "uniform":
-        return torch.linspace(0.0, 1.0, N + 1, device=DEV)
-    t = 1.0 - torch.exp(-torch.linspace(0.0, G, N + 1, device=DEV))
-    t[-1] = 1.0
-    return t
+def make_grid(N):
+    return torch.linspace(0.0, 1.0, N + 1, device=DEV)
 
 
 @torch.inference_mode()
@@ -64,7 +59,6 @@ if __name__ == "__main__":
     ap.add_argument("ckpt_dir"); ap.add_argument("data_dir")
     ap.add_argument("--set", default="test"); ap.add_argument("--ckpt-file", default="best")
     ap.add_argument("--N", type=int, default=128); ap.add_argument("--seeds", type=int, default=5)
-    ap.add_argument("--grid", default="uniform", choices=["uniform", "geom"]); ap.add_argument("--G", type=float, default=8.0)
     ap.add_argument("--batch", type=int, default=0)
     args = ap.parse_args()
     data = args.data_dir.rstrip("/")
@@ -74,8 +68,8 @@ if __name__ == "__main__":
     m = load(args.ckpt_dir, B, seq, vocab, args.ckpt_file)
     inp = np.load(f"{data}/{args.set}__inputs.npy").astype(np.int64)
     lab = np.load(f"{data}/{args.set}__labels.npy").astype(np.int64)
-    times = make_grid(args.grid, args.N, args.G)
-    print(f"ckpt {args.ckpt_dir}/{args.ckpt_file}  set {args.set} ({len(inp)} puzzles)  N={args.N} grid={args.grid}{'' if args.grid == 'uniform' else f' G={args.G:g}'}  seeds={args.seeds}", flush=True)
+    times = make_grid(args.N)
+    print(f"ckpt {args.ckpt_dir}/{args.ckpt_file}  set {args.set} ({len(inp)} puzzles)  N={args.N}  seeds={args.seeds}", flush=True)
     accs = []
     for seed in range(args.seeds):
         ok = run_seed(m, inp, lab, times, seed, B)
